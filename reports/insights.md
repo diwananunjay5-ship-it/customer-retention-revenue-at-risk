@@ -12,7 +12,7 @@ This study diagnoses customer churn dynamics and revenue concentration across a 
 Key business findings:
 1. **The 30-Day Drop-Off:** Retention means **bought in that specific month**, not "never returned." Across organic cohorts, **about 4 in 5 new customers don't buy in the very next month** (organic Month 1 retention averages ~21%, meaning ~79% do not make an immediate repeat purchase in Month 1).
 2. **Extreme Revenue Concentration:** The top 20% of customers generate **77.17% of total revenue** (£13.18M). Champions alone (23.71% of customers) generate **68.36% of all revenue** (£11.68M) with an average order frequency of 16.2 orders.
-3. **High-Value Decaying Exposure:** Formerly loyal accounts in the `Can't Lose Them` and `At Risk` segments (710 customers total) hold **£1,527,282.68** in historical spend but have not placed an order in ~11–12 months (avg recency 338 and 374 days).
+3. **Historical Spend in At Risk Accounts:** Formerly loyal accounts in the `Can't Lose Them` and `At Risk` segments (710 customers total) hold **£1,527,282.68 in historical revenue** (cumulative lifetime revenue, not future revenue at risk), having not placed an order in ~11–12 months (avg recency 338 and 374 days).
 
 ---
 
@@ -61,8 +61,46 @@ Customers were evaluated using snapshot date **2011-12-10**:
 ### Observation 1: Extreme Pareto Concentration (Top 20% = 77.2% of Revenue)
 Across the entire 5,853 customer base, the top 20% of customers (1,171 accounts) generate **77.17% of total revenue** (£13.18M out of £17.08M). Furthermore, the top 1% (59 accounts) generate 32.12% (£5.49M) and the top 5% (293 accounts) generate 52.00% (£8.88M). The business is heavily dependent on high-volume wholesale/repeat buyers.
 
-### Observation 2: £1.53M Revenue-at-Risk in Dormant High-Value Accounts
-The `Can't Lose Them` (287 accounts, £952k revenue) and `At Risk` (423 accounts, £575k revenue) segments comprise 710 accounts that placed 3 to 10+ orders historically but haven't made a purchase in nearly a year (average recency of ~340–375 days). Re-engaging even 10% of these 710 accounts represents an estimated **£152,728+** in reclaimed annual revenue.
+### Observation 2: £1.53M in Historical Revenue from At Risk and Can't Lose Them Customers
+There is **£1.53M in historical revenue from At Risk and Can't Lose Them customers** (710 accounts total: 287 `Can't Lose Them` accounts with £952k past revenue, and 423 `At Risk` accounts with £575k past revenue). That is cumulative lifetime revenue, not future revenue at risk. A meaningful portion of these high-value accounts have not purchased in nearly a year (average recency of ~340–375 days).
+*Limitation note:* Some at-risk customers may be seasonal buyers (e.g., annual holiday/gift purchasers who only place orders in November–December) rather than permanently churned accounts.
 
 ### Observation 3: The "One-and-Done" Trialist Trap
-1,619 customers (27.66% of accounts) bought exactly once, accounting for only £556,725 (3.26% of turnover). The average order value of these one-time buyers is £343.87, but without automated post-purchase onboarding or replenishment incentives, over 79% never place a second order within the next month. Converting just 10% of one-time buyers to repeat status would unlock ~£55k in immediate incremental revenue.
+1,619 customers (27.66% of accounts) bought exactly once, accounting for only £556,725 (3.26% of turnover). The average order value of these one-time buyers is £343.87, but without automated post-purchase onboarding or replenishment incentives, about 4 in 5 new customers don't buy in the very next month. Converting just 10% of one-time buyers to repeat status would unlock ~£55k in immediate incremental revenue.
+
+---
+
+## 5. Revenue-at-Risk & Win-Back Scenarios
+
+### Core Definitions
+- **Expected Annual Value (EAV):** `total_revenue / MAX(1, years since first order)` (where years are measured to snapshot date 2011-12-10).
+- **At-Risk Flag:** Segment is `'At Risk'` or `'Can\'t Lose Them'`.
+- **Revenue-at-Risk:** `SUM(expected_annual_value)` for `is_at_risk` accounts.
+- **Revenue-at-Risk %:** `Revenue-at-Risk / SUM(expected_annual_value)` for all customers.
+
+### Revenue-at-Risk Summary
+The total annualized enterprise Expected Annual Value across all 5,853 accounts is **£10,420,530.94**.
+The combined Revenue-at-Risk is **£886,993.14 (8.51% of customer base EAV)** across 710 accounts:
+
+| Segment | Customers | % Cust | Historical Spend (£) | Revenue-at-Risk (£) | RAR % | Average Recency | Suggested Strategy |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Can't Lose Them** | 287 | 4.90% | £952,698.87 | £516,432.19 | 4.96% | 338.3 days | personal call + loyalty offer |
+| **At Risk** | 423 | 7.23% | £574,985.10 | £370,560.95 | 3.56% | 374.3 days | win-back email with a discount |
+| **Total Revenue-at-Risk** | **710** | **12.13%** | **£1,527,683.97** | **£886,993.14** | **8.51%** | **359.8 days** | Prioritized Account Outreach |
+
+### Win-Back Opportunity Matrix
+*(Label: scenario assumptions, not forecasts)*
+
+| Recovery Rate | Can't Lose Them Only (287 accounts) | At Risk Only (423 accounts) | Both Combined (710 accounts) |
+| :---: | :---: | :---: | :---: |
+| **5% Recovery** | £25,821.61 | £18,528.05 | **£44,349.66** |
+| **10% Recovery** | £51,643.22 | £37,056.10 | **£88,699.31** |
+| **15% Recovery** | £77,464.83 | £55,584.14 | **£133,048.97** |
+
+### Top 50 Prioritized Action Plan
+The exported `action_list.csv` highlights the 50 accounts with highest Expected Annual Value:
+1. **High Leverage:** The top 50 accounts account for **£381,007.79** (42.96% of the entire £887.0k Revenue-at-Risk). Focus sales outreach here first.
+2. **Action Allocations:**
+   - **41 `Can't Lose Them` accounts:** Assigned **"personal call + loyalty offer"** (average 25+ orders historically; personal relationship management by account directors).
+   - **9 `At Risk` accounts:** Assigned **"win-back email with a discount"** (e.g. accounts `15749` and `12346` placed 3 high-value orders averaging >£25k each; automated high-value discount campaign).
+

@@ -276,5 +276,95 @@ def test_rfm_segment_summary_reconciles_counts_and_revenue(db_conn):
     assert abs(summary_stats[1] - 17081128.74) <= 0.02, f"Segment summary revenue £{summary_stats[1]} differs by more than 1p from £17,081,128.74"
 
 
+# ==============================================================================
+# Phase 5: Revenue-at-Risk & Win-Back Scenario Tests
+# ==============================================================================
+
+def test_is_at_risk_only_includes_two_segments(db_conn):
+    """Verify is_at_risk flag is TRUE strictly and only for 'At Risk' and 'Can''t Lose Them'."""
+    invalid_flagged = db_conn.execute("""
+        SELECT COUNT(*)
+        FROM customer_rfm
+        WHERE is_at_risk = TRUE
+          AND segment NOT IN ('At Risk', 'Can''t Lose Them')
+    """).fetchone()[0]
+    assert invalid_flagged == 0, f"Found {invalid_flagged} customers flagged as at-risk outside target segments"
+
+    unflagged_target = db_conn.execute("""
+        SELECT COUNT(*)
+        FROM customer_rfm
+        WHERE segment IN ('At Risk', 'Can''t Lose Them')
+          AND is_at_risk = FALSE
+    """).fetchone()[0]
+    assert unflagged_target == 0, f"Found {unflagged_target} target segment customers not flagged as is_at_risk"
+
+    total_at_risk = db_conn.execute("SELECT COUNT(*) FROM customer_rfm WHERE is_at_risk = TRUE").fetchone()[0]
+    expected_at_risk_sum = db_conn.execute("""
+        SELECT COUNT(*) FROM customer_rfm WHERE segment IN ('At Risk', 'Can''t Lose Them')
+    """).fetchone()[0]
+    assert total_at_risk == expected_at_risk_sum, f"is_at_risk count {total_at_risk} != target segment sum {expected_at_risk_sum}"
+    assert total_at_risk > 0, "At least one at-risk customer must be identified"
 
 
+def test_revenue_at_risk_sum_matches_action_logic(db_conn):
+    """Verify Revenue-at-Risk in summary equals the sum of expected_annual_value for is_at_risk customers."""
+    summary_rar = db_conn.execute("""
+        SELECT revenue_at_risk 
+        FROM revenue_at_risk_summary 
+        WHERE segment = 'Total Revenue-at-Risk'
+    """).fetchone()[0]
+
+    calc_rar = db_conn.execute("""
+        SELECT ROUND(SUM(expected_annual_value), 2)
+        FROM customer_rfm
+        WHERE is_at_risk = TRUE
+    """).fetchone()[0]
+
+    assert summary_rar == calc_rar, f"Summary Revenue-at-Risk (£{summary_rar}) != Customer RFM sum (£{calc_rar})"
+    assert summary_rar > 0, "Revenue-at-Risk must be greater than zero"
+
+
+def test_win_back_recovered_revenue_arithmetic(db_conn):
+    """Verify win-back recovered revenue equals Revenue-at-Risk base times the recovery rate (5%, 10%, 15%)."""
+    scenarios = db_conn.execute("""
+        SELECT recovery_rate, scope, revenue_at_risk_base, recovered_revenue
+        FROM win_back_scenarios
+    """).fetchall()
+
+    assert len(scenarios) == 9, f"Expected 9 scenario combinations (3 rates x 3 scopes), found {len(scenarios)}"
+
+    rate_map = {"5%": 0.05, "10%": 0.10, "15%": 0.15}
+    for rate_str, scope, base_val, recovered in scenarios:
+        expected_recovered = round(base_val * rate_map[rate_str], 2)
+        assert abs(recovered - expected_recovered) <= 0.01, (
+            f"Arithmetic error in scenario {rate_str} for {scope}: {recovered} != {expected_recovered}"
+        )
+
+
+def test_action_list_has_50_rows_sorted_high_to_low(db_conn):
+    """Verify action_list contains exactly 50 rows sorted high to low by expected_annual_value."""
+    rows = db_conn.execute("""
+        SELECT 
+            customer_id, country, segment, last_order_date, recency_days,
+            order_count, total_revenue, expected_annual_value, suggested_action
+        FROM action_list
+    """).fetchall()
+
+    assert len(rows) == 50, f"action_list must contain exactly 50 rows, found {len(rows)}"
+
+    eav_values = [r[7] for r in rows]
+    # Verify strictly descending (monotonically non-increasing)
+    for i in range(len(eav_values) - 1):
+        assert eav_values[i] >= eav_values[i+1], (
+            f"action_list not sorted descending at index {i}: {eav_values[i]} < {eav_values[i+1]}"
+        )
+
+    # Verify all 50 accounts are at-risk segments
+    for r in rows:
+        seg = r[2]
+        act = r[8]
+        assert seg in ("Can't Lose Them", "At Risk"), f"Invalid segment {seg} in action_list"
+        if seg == "Can't Lose Them":
+            assert act == "personal call + loyalty offer"
+        elif seg == "At Risk":
+            assert act == "win-back email with a discount"

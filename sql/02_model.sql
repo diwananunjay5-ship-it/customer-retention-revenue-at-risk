@@ -87,7 +87,8 @@ SELECT
     ROUND(c.total_revenue / c.total_orders, 2) AS avg_order_value,
     (c.total_orders > 1) AS is_repeat_customer
 FROM cust_orders c
-CROSS JOIN config_snapshot s;
+CROSS JOIN config_snapshot s
+ORDER BY c.customer_id;
 
 
 -- ------------------------------------------------------------------------------

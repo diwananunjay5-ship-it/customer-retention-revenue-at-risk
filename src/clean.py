@@ -353,12 +353,28 @@ def run_clean_pipeline(
 
     conn.execute(rfm_script)
 
+    # Execute Revenue-at-Risk and Win-back scenarios SQL (05_revenue_at_risk.sql)
+    risk_sql_path = base_dir / "sql" / "05_revenue_at_risk.sql"
+    with open(risk_sql_path, "r", encoding="utf-8") as f:
+        risk_script = f.read()
+
+    conn.execute(risk_script)
+
     if export_csv:
         conn.execute(f"""
             COPY customer_rfm TO '{str(processed_dir / 'customer_rfm.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
         """)
         conn.execute(f"""
             COPY segment_summary TO '{str(processed_dir / 'segment_summary.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+        conn.execute(f"""
+            COPY revenue_at_risk_summary TO '{str(processed_dir / 'revenue_at_risk_summary.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+        conn.execute(f"""
+            COPY win_back_scenarios TO '{str(processed_dir / 'win_back_scenarios.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+        conn.execute(f"""
+            COPY action_list TO '{str(processed_dir / 'action_list.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
         """)
         # Generate publication-grade charts
         try:
@@ -376,6 +392,7 @@ def run_clean_pipeline(
     rev_clean = conn.execute("SELECT ROUND(SUM(line_total), 2) FROM clean_sales").fetchone()[0]
     rfm_cust_cnt = conn.execute("SELECT COUNT(*) FROM customer_rfm").fetchone()[0]
     rfm_rev = conn.execute("SELECT ROUND(SUM(monetary), 2) FROM customer_rfm").fetchone()[0]
+    rar_row = conn.execute("SELECT revenue_at_risk, revenue_at_risk_pct, customer_count FROM revenue_at_risk_summary WHERE segment = 'Total Revenue-at-Risk'").fetchone()
 
     return {
         "audit_steps": audit_steps,
@@ -390,6 +407,9 @@ def run_clean_pipeline(
         "revenue_matches": rev_fact == rev_clean,
         "customer_rfm_rows": rfm_cust_cnt,
         "customer_rfm_revenue": rfm_rev,
+        "revenue_at_risk": float(rar_row[0]),
+        "revenue_at_risk_pct": float(rar_row[1]),
+        "at_risk_customers": int(rar_row[2]),
     }
 
 

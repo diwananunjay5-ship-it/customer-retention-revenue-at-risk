@@ -145,7 +145,7 @@ def generate_segment_size_vs_revenue(
         ax.text(r_val + 0.8, i + height/2, f"{r_val:.1f}% ({amt_str})", va="center", fontsize=9, color="#0E5A2A", fontweight="bold")
 
     ax.set_title("Customer Base Size vs. Revenue Contribution by RFM Segment\n"
-                 "Champions drive 68.4% of revenue from 23.7% of accounts; At-Risk accounts hold £1.53M in high-value exposure.",
+                 "Champions drive 68.4% of revenue from 23.7% of accounts; £1.53M in historical revenue from At Risk and Can't Lose Them customers.",
                  fontsize=13, fontweight="bold", pad=15, loc="left")
 
     ax.legend(loc="lower right", frameon=True, framealpha=0.95, facecolor="#ffffff", edgecolor="#cccccc", fontsize=10)
@@ -260,11 +260,152 @@ def generate_pareto_curve(
     return output_path
 
 
+def generate_revenue_at_risk_by_segment(
+    db_path: Optional[Path] = None,
+    output_path: Optional[Path] = None,
+) -> Path:
+    """
+    Generates and saves the Revenue-at-Risk comparison chart:
+    Historical spend vs. Annualized Revenue-at-Risk by segment.
+    """
+    base_dir = Path(__file__).resolve().parent.parent
+    if db_path is None:
+        db_path = base_dir / "data" / "retention.duckdb"
+    if output_path is None:
+        output_path = base_dir / "reports" / "figures" / "revenue_at_risk_by_segment.png"
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    conn = duckdb.connect(str(db_path))
+    summary_df = conn.execute("SELECT * FROM revenue_at_risk_summary").df()
+    conn.close()
+
+    plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")
+    fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
+
+    # Order segments: Can't Lose Them, At Risk, Total Revenue-at-Risk
+    seg_map = {
+        "Can't Lose Them": "Can't Lose Them",
+        "At Risk": "At Risk",
+        "Total Revenue-at-Risk": "Total At-Risk"
+    }
+    plot_df = summary_df.copy()
+    plot_df["display_name"] = plot_df["segment"].map(seg_map)
+    order = ["Can't Lose Them", "At Risk", "Total At-Risk"]
+    plot_df = plot_df.set_index("display_name").reindex(order).reset_index()
+
+    segments = plot_df["display_name"].tolist()
+    cust_counts = plot_df["customer_count"].tolist()
+    historical = (plot_df["historical_revenue"] / 1e3).tolist()
+    at_risk_eav = (plot_df["revenue_at_risk"] / 1e3).tolist()
+
+    x = np.arange(len(segments))
+    width = 0.35
+
+    rects1 = ax.bar(x - width/2, historical, width, label="Historical Lifetime Revenue", color="#95A5A6", alpha=0.9, edgecolor="#7F8C8D")
+    rects2 = ax.bar(x + width/2, at_risk_eav, width, label="Annualized Revenue-at-Risk (EAV)", color="#E74C3C", alpha=0.95, edgecolor="#C0392B")
+
+    ax.set_ylabel("Revenue (£ Thousands)", fontsize=11, fontweight="bold", labelpad=10)
+    ax.set_title("Revenue-at-Risk by Segment: Historical Spend vs. Annualized Exposure\n"
+                 "Total annualized Revenue-at-Risk is £886.6k (8.51% of total customer EAV) across 710 dormant accounts.",
+                 fontsize=12.5, fontweight="bold", pad=15, loc="left")
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"{s}\n({c:,} accounts)" for s, c in zip(segments, cust_counts)], fontsize=10, fontweight="bold")
+    ax.set_ylim(0, max(historical) * 1.25)
+
+    for r in rects1:
+        h = r.get_height()
+        ax.annotate(f"£{h:.1f}k",
+                    xy=(r.get_x() + r.get_width() / 2, h),
+                    xytext=(0, 4), textcoords="offset points",
+                    ha='center', va='bottom', fontsize=9.5, fontweight='bold', color='#555555')
+
+    for r in rects2:
+        h = r.get_height()
+        ax.annotate(f"£{h:.1f}k",
+                    xy=(r.get_x() + r.get_width() / 2, h),
+                    xytext=(0, 4), textcoords="offset points",
+                    ha='center', va='bottom', fontsize=9.5, fontweight='bold', color='#922B21')
+
+    ax.legend(loc="upper left", frameon=True, framealpha=0.95, facecolor="#ffffff", edgecolor="#cccccc", fontsize=10)
+    ax.grid(axis="y", linestyle="--", alpha=0.6)
+    ax.grid(axis="x", visible=False)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+
+    return output_path
+
+
+def generate_win_back_scenarios(
+    db_path: Optional[Path] = None,
+    output_path: Optional[Path] = None,
+) -> Path:
+    """
+    Generates and saves the Win-Back Scenarios sensitivity chart (5%, 10%, 15% recovery rates).
+    """
+    base_dir = Path(__file__).resolve().parent.parent
+    if db_path is None:
+        db_path = base_dir / "data" / "retention.duckdb"
+    if output_path is None:
+        output_path = base_dir / "reports" / "figures" / "win_back_scenarios.png"
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    conn = duckdb.connect(str(db_path))
+    scenarios_df = conn.execute("SELECT * FROM win_back_scenarios").df()
+    conn.close()
+
+    plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")
+    fig, ax = plt.subplots(figsize=(11, 6), dpi=300)
+
+    rates = ["5% Recovery", "10% Recovery", "15% Recovery"]
+    cant_lose = (scenarios_df[scenarios_df["scope"] == "Can't Lose Them Only"]["recovered_revenue"] / 1e3).tolist()
+    at_risk = (scenarios_df[scenarios_df["scope"] == "At Risk Only"]["recovered_revenue"] / 1e3).tolist()
+    both_combined = (scenarios_df[scenarios_df["scope"] == "Both (Total At-Risk)"]["recovered_revenue"] / 1e3).tolist()
+
+    x = np.arange(len(rates))
+    width = 0.25
+
+    b1 = ax.bar(x - width, cant_lose, width, label="Can't Lose Them Only (287 accounts)", color="#F39C12", alpha=0.9, edgecolor="#D68910")
+    b2 = ax.bar(x, at_risk, width, label="At Risk Only (423 accounts)", color="#3498DB", alpha=0.9, edgecolor="#2980B9")
+    b3 = ax.bar(x + width, both_combined, width, label="Both Combined (710 accounts)", color="#2ECC71", alpha=0.95, edgecolor="#27AE60")
+
+    ax.set_ylabel("Recovered Annual Revenue (£ Thousands)", fontsize=11, fontweight="bold", labelpad=10)
+    ax.set_title("Win-Back Opportunity: Potential Annual Revenue Recovery\n"
+                 "Label: Scenario assumptions, not forecasts (Reclaiming 10% of both segments recovers ~£88.7k annually)",
+                 fontsize=12.5, fontweight="bold", pad=15, loc="left")
+    ax.set_xticks(x)
+    ax.set_xticklabels(rates, fontsize=10.5, fontweight="bold")
+    ax.set_ylim(0, max(both_combined) * 1.25)
+
+    for b in [b1, b2, b3]:
+        for r in b:
+            h = r.get_height()
+            ax.annotate(f"£{h:.1f}k",
+                        xy=(r.get_x() + r.get_width() / 2, h),
+                        xytext=(0, 4), textcoords="offset points",
+                        ha='center', va='bottom', fontsize=9, fontweight='bold', color='#1C2833')
+
+    ax.legend(loc="upper left", frameon=True, framealpha=0.95, facecolor="#ffffff", edgecolor="#cccccc", fontsize=9.5)
+    ax.grid(axis="y", linestyle="--", alpha=0.6)
+    ax.grid(axis="x", visible=False)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+
+    return output_path
+
+
 def generate_all_charts(db_path: Optional[Path] = None) -> None:
     """Generates all publication-grade charts."""
     generate_cohort_heatmap(db_path=db_path)
     generate_segment_size_vs_revenue(db_path=db_path)
     generate_pareto_curve(db_path=db_path)
+    generate_revenue_at_risk_by_segment(db_path=db_path)
+    generate_win_back_scenarios(db_path=db_path)
 
 
 if __name__ == "__main__":
