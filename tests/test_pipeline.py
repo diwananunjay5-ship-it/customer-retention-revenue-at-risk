@@ -219,3 +219,62 @@ def test_cohort_partial_month_flag(db_conn):
     assert str(partial_months[0][0]) == "2011-12-01"
 
 
+# ==============================================================================
+# Phase 4: RFM Segmentation Tests
+# ==============================================================================
+
+def test_rfm_customer_count(db_conn):
+    """Verify customer_rfm contains exactly 5,853 unique customers."""
+    cust_count = db_conn.execute("SELECT COUNT(*) FROM customer_rfm").fetchone()[0]
+    assert cust_count == 5853, f"customer_rfm should have 5,853 rows, found {cust_count}"
+
+
+def test_rfm_scores_range_1_to_5(db_conn):
+    """Verify r_score, f_score, and m_score are strictly integers between 1 and 5."""
+    invalid = db_conn.execute("""
+        SELECT COUNT(*)
+        FROM customer_rfm
+        WHERE r_score NOT BETWEEN 1 AND 5
+           OR f_score NOT BETWEEN 1 AND 5
+           OR m_score NOT BETWEEN 1 AND 5
+    """).fetchone()[0]
+    assert invalid == 0, f"Found {invalid} customers with RFM scores outside 1-5"
+
+
+def test_rfm_every_customer_has_exactly_one_valid_segment(db_conn):
+    """Verify every customer has exactly one non-null segment belonging to defined taxonomy."""
+    valid_segments = {
+        "Champions", "Loyal", "New/Promising", "Can't Lose Them",
+        "At Risk", "Hibernating/Lost", "Need Attention"
+    }
+    segments = db_conn.execute("""
+        SELECT DISTINCT segment, COUNT(*) 
+        FROM customer_rfm 
+        GROUP BY segment
+    """).fetchall()
+
+    total_segmented = sum(s[1] for s in segments)
+    assert total_segmented == 5853, f"Total segmented customers {total_segmented} must equal 5,853"
+
+    for seg_name, _ in segments:
+        assert seg_name in valid_segments, f"Unexpected segment name: {seg_name}"
+
+
+def test_rfm_segment_summary_reconciles_counts_and_revenue(db_conn):
+    """Verify segment_summary sums to 5,853 customers and matches total revenue (£17,081,128.74)."""
+    summary_stats = db_conn.execute("""
+        SELECT 
+            SUM(customers) AS total_customers,
+            ROUND(SUM(revenue), 2) AS total_revenue
+        FROM segment_summary
+    """).fetchone()
+
+    total_rfm_rev = db_conn.execute("SELECT ROUND(SUM(monetary), 2) FROM customer_rfm").fetchone()[0]
+
+    assert summary_stats[0] == 5853, f"Segment summary customer sum {summary_stats[0]} != 5,853"
+    assert total_rfm_rev == 17081128.74, f"customer_rfm total revenue £{total_rfm_rev} != £17,081,128.74"
+    assert abs(summary_stats[1] - 17081128.74) <= 0.02, f"Segment summary revenue £{summary_stats[1]} differs by more than 1p from £17,081,128.74"
+
+
+
+

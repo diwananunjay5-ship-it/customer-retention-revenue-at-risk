@@ -345,12 +345,27 @@ def run_clean_pipeline(
         conn.execute(f"""
             COPY cohort_retention TO '{str(processed_dir / 'cohort_retention.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
         """)
-        # Generate chart
+
+    # Execute RFM segmentation SQL (04_rfm.sql)
+    rfm_sql_path = base_dir / "sql" / "04_rfm.sql"
+    with open(rfm_sql_path, "r", encoding="utf-8") as f:
+        rfm_script = f.read()
+
+    conn.execute(rfm_script)
+
+    if export_csv:
+        conn.execute(f"""
+            COPY customer_rfm TO '{str(processed_dir / 'customer_rfm.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+        conn.execute(f"""
+            COPY segment_summary TO '{str(processed_dir / 'segment_summary.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+        # Generate publication-grade charts
         try:
-            from src.charts import generate_cohort_heatmap
-            generate_cohort_heatmap(db_path=db_path)
+            from src.charts import generate_all_charts
+            generate_all_charts(db_path=db_path)
         except Exception as e:
-            print(f"Warning: Heatmap generation skipped ({e})")
+            print(f"Warning: Chart generation skipped ({e})")
 
     # Model summary metrics
     orders_cnt = conn.execute("SELECT COUNT(*) FROM fact_orders").fetchone()[0]
@@ -359,6 +374,8 @@ def run_clean_pipeline(
     snap_date = conn.execute("SELECT snapshot_date FROM config_snapshot").fetchone()[0]
     rev_fact = conn.execute("SELECT ROUND(SUM(total_revenue), 2) FROM fact_orders").fetchone()[0]
     rev_clean = conn.execute("SELECT ROUND(SUM(line_total), 2) FROM clean_sales").fetchone()[0]
+    rfm_cust_cnt = conn.execute("SELECT COUNT(*) FROM customer_rfm").fetchone()[0]
+    rfm_rev = conn.execute("SELECT ROUND(SUM(monetary), 2) FROM customer_rfm").fetchone()[0]
 
     return {
         "audit_steps": audit_steps,
@@ -371,6 +388,8 @@ def run_clean_pipeline(
         "fact_orders_revenue": rev_fact,
         "clean_sales_revenue": rev_clean,
         "revenue_matches": rev_fact == rev_clean,
+        "customer_rfm_rows": rfm_cust_cnt,
+        "customer_rfm_revenue": rfm_rev,
     }
 
 
