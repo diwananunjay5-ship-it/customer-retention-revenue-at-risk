@@ -1,8 +1,20 @@
-# Data files
+# Data files & databases (case-insensitive ignore rules)
+[Dd][Aa][Tt][Aa]/[Rr][Aa][Ww]/
 data/raw/
 Data/Raw/
+
+# DuckDB database files (case-insensitive)
+*[Dd][Uu][Cc][Kk][Dd][Bb]*
 *.duckdb
 *.duckdb.wal
+*.duckdb.tmp
+
+# Processed heavy data exports (case-insensitive)
+[Dd][Aa][Tt][Aa]/[Pp][Rr][Oo][Cc][Ee][Ss][Ss][Ee][Dd]/[Cc][Ll][Ee][Aa][Nn]_[Ss][Aa][Ll][Ee][Ss].[Cc][Ss][Vv]
+data/processed/clean_sales.csv
+Data/Processed/clean_sales.csv
+Data/processed/clean_sales.csv
+
 *.tmp
 
 # Python artifacts

@@ -144,9 +144,11 @@ pytest
 
 ---
 
-## 8. Data Quality & Limitations
+## 8. Data Quality, Assumptions & Limitations
 
 - **Dataset Period:** UK-based online gifts and homeware retailer, Dec 2009 – Dec 2011.
+- **Assumptions on Deduplication:** Exact duplicate rows across all 8 fields (34,335 records) were identified and removed during staging. In online retail transaction streaming, records sharing identical invoices, line items, timestamps (down to the second), prices, and customer IDs indicate logging re-tries, double-click submissions, or ingestion multi-dumps rather than separate, identical customer orders placed within the exact same second. Removing them prevents artificial inflation of order line items and sales totals.
 - **Unregistered Guest Checkouts:** Rows with null `Customer ID` represent guest checkouts and are excluded from customer-level RFM modeling (tracked and reported in `reports/data_quality_log.md`).
+- **Non-Product Stock Codes:** Administrative line items (postage fees `POST`/`DOT`, manual adjustments `M`, discounts `D`, bank charges, adjustments, and test codes) are isolated into `fact_non_products` to preserve genuine merchandise basket sizes and retention economics.
 - **Wholesale Concentration:** High-volume wholesale orders influence monetary metrics; Pareto distribution is documented to highlight concentration risks.
 - **Cancellations:** Invoices starting with `'C'` are separated into `fact_returns` to track return rates without artificially corrupting sales revenue.
