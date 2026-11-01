@@ -34,21 +34,24 @@ def generate_cohort_heatmap(
     # Read cohort retention table
     df = conn.execute("SELECT * FROM cohort_retention").df()
 
-    # Prepare matrix for heatmap
-    # Mask partial month (Dec 2011) to avoid 9-day truncation visual bias
-    df_heatmap = df.copy()
-    df_heatmap.loc[df_heatmap["is_partial_month"], "retention_pct"] = np.nan
+    # Filter out Dec 2011 from cohort rows (has only 9 days of activity and zero retention horizons)
+    df_clean = df[df["cohort_month"] != pd.to_datetime("2011-12-01").date()].copy()
+    # Mask partial month December 2011 from retention columns to prevent truncated visual bias
+    df_clean.loc[df_clean["is_partial_month"], "retention_pct"] = np.nan
 
-    pivot_table = df_heatmap.pivot(
+    pivot_table = df_clean.pivot(
         index="cohort_label", columns="month_index", values="retention_pct"
     )
 
     # Order cohorts chronologically
-    cohort_order = conn.execute("""
-        SELECT DISTINCT cohort_label, cohort_month 
-        FROM cohort_retention 
-        ORDER BY cohort_month
-    """).df()["cohort_label"].tolist()
+    cohort_order = [
+        c for c in conn.execute("""
+            SELECT DISTINCT cohort_label, cohort_month 
+            FROM cohort_retention 
+            ORDER BY cohort_month
+        """).df()["cohort_label"].tolist()
+        if "Dec 2011" not in c
+    ]
 
     pivot_table = pivot_table.reindex(cohort_order)
 
