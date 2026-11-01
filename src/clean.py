@@ -334,6 +334,24 @@ def run_clean_pipeline(
             COPY dim_date TO '{str(processed_dir / 'dim_date.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
         """)
 
+    # Execute cohort retention SQL (03_cohort.sql)
+    cohort_sql_path = base_dir / "sql" / "03_cohort.sql"
+    with open(cohort_sql_path, "r", encoding="utf-8") as f:
+        cohort_script = f.read()
+
+    conn.execute(cohort_script)
+
+    if export_csv:
+        conn.execute(f"""
+            COPY cohort_retention TO '{str(processed_dir / 'cohort_retention.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+        # Generate chart
+        try:
+            from src.charts import generate_cohort_heatmap
+            generate_cohort_heatmap(db_path=db_path)
+        except Exception as e:
+            print(f"Warning: Heatmap generation skipped ({e})")
+
     # Model summary metrics
     orders_cnt = conn.execute("SELECT COUNT(*) FROM fact_orders").fetchone()[0]
     cust_cnt = conn.execute("SELECT COUNT(*) FROM dim_customer").fetchone()[0]

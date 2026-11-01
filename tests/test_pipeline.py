@@ -163,3 +163,59 @@ def test_fact_orders_referential_integrity(db_conn):
     """).fetchone()[0]
     assert orphans == 0, f"Found {orphans} orphaned orders in fact_orders"
 
+
+# ==============================================================================
+# Phase 3: Cohort Retention Tests
+# ==============================================================================
+
+def test_cohort_month_zero_is_100_percent(db_conn):
+    """Verify month_index 0 is exactly 100.0% for every cohort."""
+    non_100 = db_conn.execute("""
+        SELECT COUNT(*) 
+        FROM cohort_retention 
+        WHERE month_index = 0 AND ABS(retention_pct - 100.0) > 0.001
+    """).fetchone()[0]
+    assert non_100 == 0, f"Found {non_100} cohorts where month_index 0 is not 100%"
+
+
+def test_cohort_retention_never_exceeds_100_percent(db_conn):
+    """Verify retention rate is never above 100.0% or negative."""
+    invalid = db_conn.execute("""
+        SELECT COUNT(*) 
+        FROM cohort_retention 
+        WHERE retention_pct > 100.0 OR retention_pct < 0.0
+    """).fetchone()[0]
+    assert invalid == 0, f"Found {invalid} records with retention > 100% or < 0%"
+
+
+def test_cohort_total_customers_reconciles(db_conn):
+    """Verify sum of cohort sizes across all cohorts matches dim_customer (5,853)."""
+    tot_cohort_size = db_conn.execute("""
+        SELECT SUM(cohort_size) 
+        FROM cohort_retention 
+        WHERE month_index = 0
+    """).fetchone()[0]
+    assert tot_cohort_size == 5853, f"Total cohort size {tot_cohort_size} must equal 5,853"
+
+
+def test_cohort_dec_2009_label(db_conn):
+    """Verify December 2009 cohort is labeled with existing customer caveat."""
+    label = db_conn.execute("""
+        SELECT DISTINCT cohort_label 
+        FROM cohort_retention 
+        WHERE cohort_month = '2009-12-01'::DATE
+    """).fetchone()[0]
+    assert label == "Dec 2009 (includes existing customers)", f"Unexpected label: {label}"
+
+
+def test_cohort_partial_month_flag(db_conn):
+    """Verify December 2011 is accurately flagged as partial month."""
+    partial_months = db_conn.execute("""
+        SELECT DISTINCT order_cohort_month 
+        FROM cohort_retention 
+        WHERE is_partial_month = TRUE
+    """).fetchall()
+    assert len(partial_months) == 1
+    assert str(partial_months[0][0]) == "2011-12-01"
+
+
