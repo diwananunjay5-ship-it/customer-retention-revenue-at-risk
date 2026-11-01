@@ -1,0 +1,4 @@
+segment,customer_count,pct_of_customers,gross_revenue,returns_amount,net_revenue,gross_revenue_at_risk,revenue_at_risk,revenue_at_risk_pct
+Total Revenue-at-Risk,710,12.13,1527683.97,211736.95,1315947.02,886993.14,769096.74,7.87
+Can't Lose Them,287,4.9,952698.87,86550.2,866148.67,516432.19,480844.91,4.92
+At Risk,423,7.23,574985.1,125186.75,449798.35,370560.95,288251.83,2.95

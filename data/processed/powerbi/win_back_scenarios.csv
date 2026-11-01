@@ -1,0 +1,10 @@
+recovery_rate,scope,customers_targeted,revenue_at_risk_base,recovered_revenue,notes
+10%,At Risk Only,423,288251.83,28825.18,"scenario assumptions, not forecasts"
+10%,Both (Total At-Risk),710,769096.74,76909.67,"scenario assumptions, not forecasts"
+10%,Can't Lose Them Only,287,480844.91,48084.49,"scenario assumptions, not forecasts"
+15%,At Risk Only,423,288251.83,43237.77,"scenario assumptions, not forecasts"
+15%,Both (Total At-Risk),710,769096.74,115364.51,"scenario assumptions, not forecasts"
+15%,Can't Lose Them Only,287,480844.91,72126.74,"scenario assumptions, not forecasts"
+5%,At Risk Only,423,288251.83,14412.59,"scenario assumptions, not forecasts"
+5%,Both (Total At-Risk),710,769096.74,38454.84,"scenario assumptions, not forecasts"
+5%,Can't Lose Them Only,287,480844.91,24042.25,"scenario assumptions, not forecasts"

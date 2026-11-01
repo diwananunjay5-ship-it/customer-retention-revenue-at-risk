@@ -413,3 +413,82 @@ def test_action_list_has_50_rows_sorted_high_to_low(db_conn):
         elif seg == "At Risk":
             assert act == "win-back email with a discount"
 
+
+# ==============================================================================
+# Phase 6: Power BI Exports Data Integrity Tests
+# ==============================================================================
+
+def test_powerbi_export_files_exist():
+    """Verify all 8 CSV tables and DATA_DICTIONARY.md exist in data/processed/powerbi/."""
+    pbi_dir = BASE_DIR / "data" / "processed" / "powerbi"
+    expected_files = [
+        "dim_customer.csv",
+        "fact_orders.csv",
+        "dim_date.csv",
+        "cohort_retention.csv",
+        "segment_summary.csv",
+        "revenue_at_risk_summary.csv",
+        "win_back_scenarios.csv",
+        "action_list.csv",
+        "DATA_DICTIONARY.md",
+    ]
+    for fname in expected_files:
+        fpath = pbi_dir / fname
+        assert fpath.exists(), f"Expected Power BI export file missing: {fpath}"
+        assert fpath.stat().st_size > 0, f"Power BI export file is empty: {fpath}"
+
+
+def test_powerbi_no_nulls_in_key_columns():
+    """Verify key identifier columns contain zero NULLs in Power BI exports."""
+    import pandas as pd
+    pbi_dir = BASE_DIR / "data" / "processed" / "powerbi"
+    
+    # dim_customer: customer_id, segment, first_order_date, last_order_date
+    dim_cust = pd.read_csv(pbi_dir / "dim_customer.csv")
+    assert dim_cust["customer_id"].isnull().sum() == 0, "dim_customer has null customer_id"
+    assert dim_cust["segment"].isnull().sum() == 0, "dim_customer has null segment"
+    assert dim_cust["first_order_date"].isnull().sum() == 0, "dim_customer has null first_order_date"
+    assert dim_cust["last_order_date"].isnull().sum() == 0, "dim_customer has null last_order_date"
+
+    # fact_orders: customer_id, invoice_no, order_date
+    fact_orders = pd.read_csv(pbi_dir / "fact_orders.csv")
+    assert fact_orders["customer_id"].isnull().sum() == 0, "fact_orders has null customer_id"
+    assert fact_orders["invoice_no"].isnull().sum() == 0, "fact_orders has null invoice_no"
+    assert fact_orders["order_date"].isnull().sum() == 0, "fact_orders has null order_date"
+
+
+def test_powerbi_dim_customer_unique_and_count():
+    """Verify dim_customer.csv contains exactly 5,853 unique integer customer IDs."""
+    import pandas as pd
+    pbi_dir = BASE_DIR / "data" / "processed" / "powerbi"
+    dim_cust = pd.read_csv(pbi_dir / "dim_customer.csv")
+    assert len(dim_cust) == 5853, f"Expected 5,853 rows in dim_customer.csv, got {len(dim_cust)}"
+    assert dim_cust["customer_id"].nunique() == 5853, "Customer IDs in dim_customer.csv are not unique"
+    assert pd.api.types.is_integer_dtype(dim_cust["customer_id"]), "customer_id must be integer type"
+
+
+def test_powerbi_referential_integrity():
+    """Verify every customer_id in fact_orders.csv exists in dim_customer.csv."""
+    import pandas as pd
+    pbi_dir = BASE_DIR / "data" / "processed" / "powerbi"
+    dim_cust = pd.read_csv(pbi_dir / "dim_customer.csv")
+    fact_orders = pd.read_csv(pbi_dir / "fact_orders.csv")
+    cust_set = set(dim_cust["customer_id"])
+    order_cust_set = set(fact_orders["customer_id"])
+    orphans = order_cust_set - cust_set
+    assert len(orphans) == 0, f"Found {len(orphans)} orphaned customer IDs in fact_orders.csv"
+
+
+def test_powerbi_revenue_reconciliation():
+    """Verify gross revenue reconciles to £17,081,128.74 within rounding tolerance across fact_orders and dim_customer."""
+    import pandas as pd
+    pbi_dir = BASE_DIR / "data" / "processed" / "powerbi"
+    dim_cust = pd.read_csv(pbi_dir / "dim_customer.csv")
+    fact_orders = pd.read_csv(pbi_dir / "fact_orders.csv")
+    tot_cust_rev = round(dim_cust["total_revenue"].sum(), 2)
+    tot_fact_rev = round(fact_orders["order_revenue"].sum(), 2)
+    assert abs(tot_cust_rev - 17081128.74) <= 0.05, f"dim_customer total_revenue £{tot_cust_rev} differs by >5p from £17,081,128.74"
+    assert abs(tot_fact_rev - 17081128.74) <= 0.05, f"fact_orders order_revenue £{tot_fact_rev} differs by >5p from £17,081,128.74"
+
+
+
