@@ -297,6 +297,13 @@ def run_clean_pipeline(
 
     conn.execute(sql_script)
 
+    # Execute dimensional modeling SQL (02_model.sql)
+    model_sql_path = base_dir / "sql" / "02_model.sql"
+    with open(model_sql_path, "r", encoding="utf-8") as f:
+        model_script = f.read()
+
+    conn.execute(model_script)
+
     # Audit trail
     audit_steps = get_audit_trail(conn)
 
@@ -317,11 +324,35 @@ def run_clean_pipeline(
         conn.execute(f"""
             COPY fact_non_products TO '{str(processed_dir / 'fact_non_products.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
         """)
+        conn.execute(f"""
+            COPY fact_orders TO '{str(processed_dir / 'fact_orders.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+        conn.execute(f"""
+            COPY dim_customer TO '{str(processed_dir / 'dim_customer.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+        conn.execute(f"""
+            COPY dim_date TO '{str(processed_dir / 'dim_date.csv').replace(chr(92), '/')}' (HEADER, DELIMITER ',');
+        """)
+
+    # Model summary metrics
+    orders_cnt = conn.execute("SELECT COUNT(*) FROM fact_orders").fetchone()[0]
+    cust_cnt = conn.execute("SELECT COUNT(*) FROM dim_customer").fetchone()[0]
+    date_cnt = conn.execute("SELECT COUNT(*) FROM dim_date").fetchone()[0]
+    snap_date = conn.execute("SELECT snapshot_date FROM config_snapshot").fetchone()[0]
+    rev_fact = conn.execute("SELECT ROUND(SUM(total_revenue), 2) FROM fact_orders").fetchone()[0]
+    rev_clean = conn.execute("SELECT ROUND(SUM(line_total), 2) FROM clean_sales").fetchone()[0]
 
     return {
         "audit_steps": audit_steps,
         "clean_rows": audit_steps[-1]["rows_after"],
         "db_path": str(db_path),
+        "fact_orders_rows": orders_cnt,
+        "dim_customer_rows": cust_cnt,
+        "dim_date_rows": date_cnt,
+        "snapshot_date": str(snap_date),
+        "fact_orders_revenue": rev_fact,
+        "clean_sales_revenue": rev_clean,
+        "revenue_matches": rev_fact == rev_clean,
     }
 
 
