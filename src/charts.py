@@ -296,22 +296,22 @@ def generate_revenue_at_risk_by_segment(
 
     segments = plot_df["display_name"].tolist()
     cust_counts = plot_df["customer_count"].tolist()
-    historical = (plot_df["historical_revenue"] / 1e3).tolist()
-    at_risk_eav = (plot_df["revenue_at_risk"] / 1e3).tolist()
+    net_rev = (plot_df["net_revenue"] / 1e3).tolist()
+    net_rar_eav = (plot_df["revenue_at_risk"] / 1e3).tolist()
 
     x = np.arange(len(segments))
     width = 0.35
 
-    rects1 = ax.bar(x - width/2, historical, width, label="Historical Lifetime Revenue", color="#95A5A6", alpha=0.9, edgecolor="#7F8C8D")
-    rects2 = ax.bar(x + width/2, at_risk_eav, width, label="Annualized Revenue-at-Risk (EAV)", color="#E74C3C", alpha=0.95, edgecolor="#C0392B")
+    rects1 = ax.bar(x - width/2, net_rev, width, label="Historical Net Spend (Post-Returns)", color="#95A5A6", alpha=0.9, edgecolor="#7F8C8D")
+    rects2 = ax.bar(x + width/2, net_rar_eav, width, label="Annualized Net Revenue-at-Risk", color="#E74C3C", alpha=0.95, edgecolor="#C0392B")
 
     ax.set_ylabel("Revenue (£ Thousands)", fontsize=11, fontweight="bold", labelpad=10)
-    ax.set_title("Revenue-at-Risk by Segment: Historical Spend vs. Annualized Exposure\n"
-                 "Total annualized Revenue-at-Risk is £886.6k (8.51% of total customer EAV) across 710 dormant accounts.",
+    ax.set_title("Revenue-at-Risk by Segment: Historical Net Spend vs. Annualized Exposure\n"
+                 "Total annualized Net Revenue-at-Risk is £769.1k (7.87% of total customer net EAV) across 710 dormant accounts.",
                  fontsize=12.5, fontweight="bold", pad=15, loc="left")
     ax.set_xticks(x)
     ax.set_xticklabels([f"{s}\n({c:,} accounts)" for s, c in zip(segments, cust_counts)], fontsize=10, fontweight="bold")
-    ax.set_ylim(0, max(historical) * 1.25)
+    ax.set_ylim(0, max(net_rev) * 1.25)
 
     for r in rects1:
         h = r.get_height()
@@ -343,7 +343,7 @@ def generate_win_back_scenarios(
     output_path: Optional[Path] = None,
 ) -> Path:
     """
-    Generates and saves the Win-Back Scenarios sensitivity chart (5%, 10%, 15% recovery rates).
+    Generates and saves the Win-Back Scenarios sensitivity chart (5%, 10%, 15% recovery rates on Net RAR).
     """
     base_dir = Path(__file__).resolve().parent.parent
     if db_path is None:
@@ -373,8 +373,8 @@ def generate_win_back_scenarios(
     b3 = ax.bar(x + width, both_combined, width, label="Both Combined (710 accounts)", color="#2ECC71", alpha=0.95, edgecolor="#27AE60")
 
     ax.set_ylabel("Recovered Annual Revenue (£ Thousands)", fontsize=11, fontweight="bold", labelpad=10)
-    ax.set_title("Win-Back Opportunity: Potential Annual Revenue Recovery\n"
-                 "Label: Scenario assumptions, not forecasts (Reclaiming 10% of both segments recovers ~£88.7k annually)",
+    ax.set_title("Win-Back Opportunity: Potential Annual Revenue Recovery (Net Basis)\n"
+                 "Label: Scenario assumptions, not forecasts (Reclaiming 10% of both segments recovers ~£76.9k annually)",
                  fontsize=12.5, fontweight="bold", pad=15, loc="left")
     ax.set_xticks(x)
     ax.set_xticklabels(rates, fontsize=10.5, fontweight="bold")

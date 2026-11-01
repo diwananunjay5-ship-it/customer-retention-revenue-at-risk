@@ -392,7 +392,7 @@ def run_clean_pipeline(
     rev_clean = conn.execute("SELECT ROUND(SUM(line_total), 2) FROM clean_sales").fetchone()[0]
     rfm_cust_cnt = conn.execute("SELECT COUNT(*) FROM customer_rfm").fetchone()[0]
     rfm_rev = conn.execute("SELECT ROUND(SUM(monetary), 2) FROM customer_rfm").fetchone()[0]
-    rar_row = conn.execute("SELECT revenue_at_risk, revenue_at_risk_pct, customer_count FROM revenue_at_risk_summary WHERE segment = 'Total Revenue-at-Risk'").fetchone()
+    rar_row = conn.execute("SELECT revenue_at_risk, revenue_at_risk_pct, customer_count, gross_revenue_at_risk FROM revenue_at_risk_summary WHERE segment = 'Total Revenue-at-Risk'").fetchone()
 
     return {
         "audit_steps": audit_steps,
@@ -410,6 +410,7 @@ def run_clean_pipeline(
         "revenue_at_risk": float(rar_row[0]),
         "revenue_at_risk_pct": float(rar_row[1]),
         "at_risk_customers": int(rar_row[2]),
+        "gross_revenue_at_risk": float(rar_row[3]),
     }
 
 

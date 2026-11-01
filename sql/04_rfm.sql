@@ -1,13 +1,20 @@
 -- Customer Retention & Revenue-at-Risk Pipeline: RFM Segmentation
 -- Computes customer-level Recency, Frequency, Monetary metrics, assigns quintile/band scores,
 -- and classifies each customer account into mutually exclusive behavioral segments.
--- Also calculates expected_annual_value and flags is_at_risk accounts.
+-- Also incorporates customer-matched returns to compute net revenue, gross EAV, and net EAV.
 
 -- ------------------------------------------------------------------------------
 -- 1. Customer RFM Table (customer_rfm)
 -- ------------------------------------------------------------------------------
 CREATE OR REPLACE TABLE customer_rfm AS
-WITH base_rfm AS (
+WITH cust_returns AS (
+    SELECT 
+        customer_id, 
+        ROUND(SUM(ABS(line_total)), 4) AS returns_amount
+    FROM fact_returns
+    GROUP BY customer_id
+),
+base_rfm AS (
     SELECT
         c.customer_id,
         c.country,
@@ -28,8 +35,10 @@ WITH base_rfm AS (
             ELSE 5
         END AS f_score,
         -- M Score (1 to 5): 5 is highest monetary spend, 1 is lowest monetary spend (customer_id ASC tie-breaker)
-        NTILE(5) OVER (ORDER BY c.total_revenue ASC, c.customer_id ASC) AS m_score
+        NTILE(5) OVER (ORDER BY c.total_revenue ASC, c.customer_id ASC) AS m_score,
+        COALESCE(r.returns_amount, 0.0) AS returns_amount
     FROM dim_customer c
+    LEFT JOIN cust_returns r ON c.customer_id = r.customer_id
 ),
 scored_rfm AS (
     SELECT
@@ -40,12 +49,14 @@ scored_rfm AS (
         recency_days,
         frequency,
         monetary,
+        ROUND(returns_amount, 2) AS returns_amount,
+        ROUND(monetary - returns_amount, 2) AS net_revenue,
         avg_order_value,
         r_score,
         f_score,
         m_score,
         r_score || f_score || m_score AS rfm_cell,
-        -- Ordered rules: first match wins
+        -- Ordered rules: first match wins (segments remain based on gross monetary)
         CASE 
             WHEN r_score >= 4 AND f_score >= 4 THEN 'Champions'
             WHEN r_score >= 3 AND f_score >= 3 THEN 'Loyal'
@@ -55,8 +66,12 @@ scored_rfm AS (
             WHEN r_score <= 2 AND f_score <= 2 THEN 'Hibernating/Lost'
             ELSE 'Need Attention'
         END AS segment,
-        -- Expected Annual Value (EAV): total_revenue / MAX(1, years since first order)
-        ROUND(monetary / GREATEST(1.0, DATEDIFF('day', first_order_date, (SELECT snapshot_date FROM config_snapshot)) / 365.0), 2) AS expected_annual_value
+        -- Gross Expected Annual Value
+        ROUND(monetary / GREATEST(1.0, DATEDIFF('day', first_order_date, (SELECT snapshot_date FROM config_snapshot)) / 365.0), 2) AS gross_expected_annual_value,
+        -- Net Expected Annual Value: MAX(0, net_revenue) / MAX(1, years since first order)
+        ROUND(GREATEST(0.0, monetary - returns_amount) / GREATEST(1.0, DATEDIFF('day', first_order_date, (SELECT snapshot_date FROM config_snapshot)) / 365.0), 2) AS net_expected_annual_value,
+        -- Backward compatibility alias
+        ROUND(GREATEST(0.0, monetary - returns_amount) / GREATEST(1.0, DATEDIFF('day', first_order_date, (SELECT snapshot_date FROM config_snapshot)) / 365.0), 2) AS expected_annual_value
     FROM base_rfm
 )
 SELECT 

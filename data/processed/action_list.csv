@@ -1,51 +1,51 @@
-customer_id,country,segment,last_order_date,recency_days,order_count,total_revenue,expected_annual_value,suggested_action
-15749,United Kingdom,At Risk,2011-04-18,236,3,44534.3,44534.3,win-back email with a discount
-12346,United Kingdom,At Risk,2011-01-18,326,3,77352.96,43570.73,win-back email with a discount
-16754,United Kingdom,Can't Lose Them,2010-12-02,373,29,65500.07,37239.14,personal call + loyalty offer
-13093,United Kingdom,Can't Lose Them,2011-03-09,276,55,54144.25,26851.43,personal call + loyalty offer
-17850,United Kingdom,Can't Lose Them,2010-12-02,373,155,51208.87,25430.26,personal call + loyalty offer
-13902,Denmark,Can't Lose Them,2010-03-17,633,5,34023.26,17128.95,personal call + loyalty offer
-12482,Sweden,Can't Lose Them,2010-05-12,577,27,21941.72,12245.76,personal call + loyalty offer
-15808,United Kingdom,Can't Lose Them,2011-02-06,307,21,17180.25,8485.51,personal call + loyalty offer
-17448,United Kingdom,Can't Lose Them,2010-06-28,530,41,14448.67,8163.72,personal call + loyalty offer
-13564,United Kingdom,Can't Lose Them,2010-12-20,355,36,15880.22,7854.04,personal call + loyalty offer
-14028,United Kingdom,At Risk,2010-06-07,551,3,10396.5,6886.97,win-back email with a discount
-18087,United Kingdom,Can't Lose Them,2011-02-22,291,16,13908.72,6869.67,personal call + loyalty offer
-13952,United Kingdom,Can't Lose Them,2011-05-06,218,14,12823.52,6464.9,personal call + loyalty offer
-14134,United Kingdom,Can't Lose Them,2010-11-22,383,15,11123.35,5561.68,personal call + loyalty offer
-15032,United Kingdom,Can't Lose Them,2011-03-28,257,8,11010.05,5505.03,personal call + loyalty offer
-17504,United Kingdom,Can't Lose Them,2011-05-17,207,18,9490.17,5170.02,personal call + loyalty offer
-14439,Greece,Can't Lose Them,2011-01-24,320,5,9443.04,5009.75,personal call + loyalty offer
-14828,United Kingdom,Can't Lose Them,2011-05-27,197,13,9839.46,4899.59,personal call + loyalty offer
-14063,United Kingdom,Can't Lose Them,2010-01-22,687,7,9471.5,4722.81,personal call + loyalty offer
-17230,United Kingdom,Can't Lose Them,2011-03-20,265,18,9388.49,4681.42,personal call + loyalty offer
-13715,United Kingdom,Can't Lose Them,2011-03-03,282,17,8153.04,4657.06,personal call + loyalty offer
-14160,United Kingdom,Can't Lose Them,2010-04-08,611,7,8421.47,4397.48,personal call + loyalty offer
-16546,United Kingdom,Can't Lose Them,2011-02-22,291,5,5307.07,4372.64,personal call + loyalty offer
-13206,United Kingdom,Can't Lose Them,2010-11-04,401,13,8308.19,4137.09,personal call + loyalty offer
-13734,United Kingdom,At Risk,2010-07-19,509,4,6695.69,4052.95,win-back email with a discount
-18231,United Kingdom,Can't Lose Them,2011-05-31,193,28,6848.27,3575.99,personal call + loyalty offer
-15332,Lithuania,Can't Lose Them,2010-12-08,367,6,4892.68,3474.37,personal call + loyalty offer
-13935,United Kingdom,At Risk,2010-04-22,597,3,6116.92,3419.11,win-back email with a discount
-14154,United Kingdom,Can't Lose Them,2011-04-14,240,8,6460.7,3388.15,personal call + loyalty offer
-13615,United Kingdom,Can't Lose Them,2011-01-25,319,8,6272.53,3361.93,personal call + loyalty offer
-15413,United Kingdom,Can't Lose Them,2010-01-17,692,5,6798.72,3357.96,personal call + loyalty offer
-15369,United Kingdom,Can't Lose Them,2010-08-04,493,11,6251.26,3117.09,personal call + loyalty offer
-14105,United Kingdom,Can't Lose Them,2011-04-14,240,5,5988.83,3027.59,personal call + loyalty offer
-12754,Japan,At Risk,2011-04-18,236,3,3010.74,3010.74,win-back email with a discount
-12835,United Kingdom,Can't Lose Them,2010-10-08,428,41,5996.83,2969.94,personal call + loyalty offer
-14249,United Kingdom,Can't Lose Them,2010-10-25,411,12,5400.46,2898.78,personal call + loyalty offer
-12625,Germany,At Risk,2011-05-12,212,4,4678.88,2860.62,win-back email with a discount
-14442,Channel Islands,Can't Lose Them,2011-05-19,205,7,5367.02,2834.97,personal call + loyalty offer
-12967,United Kingdom,At Risk,2010-12-16,359,3,2938.52,2793.12,win-back email with a discount
-16072,United Kingdom,At Risk,2011-02-24,289,4,4180.09,2774.06,win-back email with a discount
-12755,Japan,Can't Lose Them,2011-03-04,281,11,5236.26,2753.94,personal call + loyalty offer
-13659,United Kingdom,Can't Lose Them,2011-05-18,206,12,4884.68,2697.29,personal call + loyalty offer
-17829,United Arab Emirates,Can't Lose Them,2011-02-14,299,5,4756.74,2646.66,personal call + loyalty offer
-15235,United Kingdom,Can't Lose Them,2011-05-06,218,16,2772.76,2601.69,personal call + loyalty offer
-14025,United Kingdom,Can't Lose Them,2010-09-01,465,8,4057.9,2536.19,personal call + loyalty offer
-13044,United Kingdom,Can't Lose Them,2011-02-21,292,11,4848.05,2524.31,personal call + loyalty offer
-14081,United Kingdom,Can't Lose Them,2011-02-10,303,10,4867.57,2433.79,personal call + loyalty offer
-17138,United Kingdom,Can't Lose Them,2011-03-09,276,7,4417.27,2392.14,personal call + loyalty offer
-13958,United Kingdom,Can't Lose Them,2010-11-25,380,8,4709.23,2338.6,personal call + loyalty offer
-14740,United Kingdom,Can't Lose Them,2011-05-26,198,11,4161.06,2325.86,personal call + loyalty offer
+customer_id,country,segment,last_order_date,recency_days,order_count,total_revenue,returns_amount,net_revenue,return_pct,returns_flag,gross_expected_annual_value,net_expected_annual_value,suggested_action
+16754,United Kingdom,Can't Lose Them,2010-12-02,373,29,65500.07,10941.89,54558.18,16.71,false,37239.14,31018.28,personal call + loyalty offer
+13093,United Kingdom,Can't Lose Them,2011-03-09,276,55,54144.25,869.92,53274.33,1.61,false,26851.43,26420.01,personal call + loyalty offer
+17850,United Kingdom,Can't Lose Them,2010-12-02,373,155,51208.87,801.1,50407.77,1.56,false,25430.26,25032.43,personal call + loyalty offer
+15749,United Kingdom,At Risk,2011-04-18,236,3,44534.3,22998.4,21535.9,51.64,true,44534.3,21535.9,win-back email with a discount
+13902,Denmark,Can't Lose Them,2010-03-17,633,5,34023.26,3684.0,30339.26,10.83,false,17128.95,15274.25,personal call + loyalty offer
+12482,Sweden,Can't Lose Them,2010-05-12,577,27,21941.72,1797.87,20143.85,8.19,false,12245.76,11242.36,personal call + loyalty offer
+15808,United Kingdom,Can't Lose Them,2011-02-06,307,21,17180.25,141.3,17038.95,0.82,false,8485.51,8415.72,personal call + loyalty offer
+13564,United Kingdom,Can't Lose Them,2010-12-20,355,36,15880.22,1462.83,14417.39,9.21,false,7854.04,7130.55,personal call + loyalty offer
+18087,United Kingdom,Can't Lose Them,2011-02-22,291,16,13908.72,349.9,13558.82,2.52,false,6869.67,6696.85,personal call + loyalty offer
+13952,United Kingdom,Can't Lose Them,2011-05-06,218,14,12823.52,32.63,12790.89,0.25,false,6464.9,6448.45,personal call + loyalty offer
+17448,United Kingdom,Can't Lose Them,2010-06-28,530,41,14448.67,4361.29,10087.38,30.18,false,8163.72,5699.53,personal call + loyalty offer
+14134,United Kingdom,Can't Lose Them,2010-11-22,383,15,11123.35,0.0,11123.35,0.0,false,5561.68,5561.68,personal call + loyalty offer
+15032,United Kingdom,Can't Lose Them,2011-03-28,257,8,11010.05,495.0,10515.05,4.5,false,5505.03,5257.53,personal call + loyalty offer
+17504,United Kingdom,Can't Lose Them,2011-05-17,207,18,9490.17,251.75,9238.42,2.65,false,5170.02,5032.87,personal call + loyalty offer
+14439,Greece,Can't Lose Them,2011-01-24,320,5,9443.04,0.0,9443.04,0.0,false,5009.75,5009.75,personal call + loyalty offer
+14828,United Kingdom,Can't Lose Them,2011-05-27,197,13,9839.46,36.0,9803.46,0.37,false,4899.59,4881.67,personal call + loyalty offer
+13715,United Kingdom,Can't Lose Them,2011-03-03,282,17,8153.04,44.95,8108.09,0.55,false,4657.06,4631.38,personal call + loyalty offer
+17230,United Kingdom,Can't Lose Them,2011-03-20,265,18,9388.49,229.04,9159.45,2.44,false,4681.42,4567.21,personal call + loyalty offer
+14160,United Kingdom,Can't Lose Them,2010-04-08,611,7,8421.47,0.0,8421.47,0.0,false,4397.48,4397.48,personal call + loyalty offer
+13206,United Kingdom,Can't Lose Them,2010-11-04,401,13,8308.19,97.19,8211.0,1.17,false,4137.09,4088.7,personal call + loyalty offer
+16546,United Kingdom,Can't Lose Them,2011-02-22,291,5,5307.07,886.03,4421.04,16.7,false,4372.64,3642.62,personal call + loyalty offer
+18231,United Kingdom,Can't Lose Them,2011-05-31,193,28,6848.27,32.8,6815.47,0.48,false,3575.99,3558.86,personal call + loyalty offer
+15332,Lithuania,Can't Lose Them,2010-12-08,367,6,4892.68,0.0,4892.68,0.0,false,3474.37,3474.37,personal call + loyalty offer
+13935,United Kingdom,At Risk,2010-04-22,597,3,6116.92,0.0,6116.92,0.0,false,3419.11,3419.11,win-back email with a discount
+13615,United Kingdom,Can't Lose Them,2011-01-25,319,8,6272.53,60.3,6212.23,0.96,false,3361.93,3329.61,personal call + loyalty offer
+14154,United Kingdom,Can't Lose Them,2011-04-14,240,8,6460.7,197.1,6263.6,3.05,false,3388.15,3284.79,personal call + loyalty offer
+12835,United Kingdom,Can't Lose Them,2010-10-08,428,41,5996.83,24.64,5972.19,0.41,false,2969.94,2957.73,personal call + loyalty offer
+12754,Japan,At Risk,2011-04-18,236,3,3010.74,61.62,2949.12,2.05,false,3010.74,2949.12,win-back email with a discount
+14249,United Kingdom,Can't Lose Them,2010-10-25,411,12,5400.46,0.0,5400.46,0.0,false,2898.78,2898.78,personal call + loyalty offer
+14105,United Kingdom,Can't Lose Them,2011-04-14,240,5,5988.83,284.85,5703.98,4.76,false,3027.59,2883.59,personal call + loyalty offer
+12625,Germany,At Risk,2011-05-12,212,4,4678.88,69.5,4609.38,1.49,false,2860.62,2818.13,win-back email with a discount
+14442,Channel Islands,Can't Lose Them,2011-05-19,205,7,5367.02,95.0,5272.02,1.77,false,2834.97,2784.79,personal call + loyalty offer
+16072,United Kingdom,At Risk,2011-02-24,289,4,4180.09,0.0,4180.09,0.0,false,2774.06,2774.06,win-back email with a discount
+17829,United Arab Emirates,Can't Lose Them,2011-02-14,299,5,4756.74,76.32,4680.42,1.6,false,2646.66,2604.2,personal call + loyalty offer
+15235,United Kingdom,Can't Lose Them,2011-05-06,218,16,2772.76,0.0,2772.76,0.0,false,2601.69,2601.69,personal call + loyalty offer
+13659,United Kingdom,Can't Lose Them,2011-05-18,206,12,4884.68,178.25,4706.43,3.65,false,2697.29,2598.86,personal call + loyalty offer
+13044,United Kingdom,Can't Lose Them,2011-02-21,292,11,4848.05,29.7,4818.35,0.61,false,2524.31,2508.84,personal call + loyalty offer
+14025,United Kingdom,Can't Lose Them,2010-09-01,465,8,4057.9,88.8,3969.1,2.19,false,2536.19,2480.69,personal call + loyalty offer
+17138,United Kingdom,Can't Lose Them,2011-03-09,276,7,4417.27,0.0,4417.27,0.0,false,2392.14,2392.14,personal call + loyalty offer
+14081,United Kingdom,Can't Lose Them,2011-02-10,303,10,4867.57,120.05,4747.52,2.47,false,2433.79,2373.76,personal call + loyalty offer
+12967,United Kingdom,At Risk,2010-12-16,359,3,2938.52,466.15,2472.37,15.86,false,2793.12,2350.04,win-back email with a discount
+13707,United Kingdom,Can't Lose Them,2011-03-17,268,5,3365.86,0.0,3365.86,0.0,false,2287.78,2287.78,personal call + loyalty offer
+14740,United Kingdom,Can't Lose Them,2011-05-26,198,11,4161.06,92.2,4068.86,2.22,false,2325.86,2274.32,personal call + loyalty offer
+17508,Greece,Can't Lose Them,2011-03-04,281,8,4579.23,32.45,4546.78,0.71,false,2280.24,2264.09,personal call + loyalty offer
+14817,United Kingdom,Can't Lose Them,2011-05-23,201,7,3959.86,70.65,3889.21,1.78,false,2301.51,2260.45,personal call + loyalty offer
+13958,United Kingdom,Can't Lose Them,2010-11-25,380,8,4709.23,204.45,4504.78,4.34,false,2338.6,2237.07,personal call + loyalty offer
+14625,United Kingdom,Can't Lose Them,2011-05-27,197,11,4497.88,68.7,4429.18,1.53,false,2267.58,2232.94,personal call + loyalty offer
+13357,United Kingdom,Can't Lose Them,2011-03-27,258,5,3795.01,0.0,3795.01,0.0,false,2205.7,2205.7,personal call + loyalty offer
+14648,United Kingdom,Can't Lose Them,2010-10-19,417,15,4463.39,88.65,4374.74,1.99,false,2231.7,2187.37,personal call + loyalty offer
+13031,United Kingdom,Can't Lose Them,2010-10-28,408,5,3292.84,0.0,3292.84,0.0,false,2165.56,2165.56,personal call + loyalty offer

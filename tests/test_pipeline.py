@@ -307,21 +307,48 @@ def test_is_at_risk_only_includes_two_segments(db_conn):
 
 
 def test_revenue_at_risk_sum_matches_action_logic(db_conn):
-    """Verify Revenue-at-Risk in summary equals the sum of expected_annual_value for is_at_risk customers."""
+    """Verify Revenue-at-Risk in summary equals the sum of net_expected_annual_value for is_at_risk customers."""
     summary_rar = db_conn.execute("""
-        SELECT revenue_at_risk 
+        SELECT revenue_at_risk, gross_revenue_at_risk
         FROM revenue_at_risk_summary 
         WHERE segment = 'Total Revenue-at-Risk'
-    """).fetchone()[0]
+    """).fetchone()
 
-    calc_rar = db_conn.execute("""
-        SELECT ROUND(SUM(expected_annual_value), 2)
+    calc_net_rar = db_conn.execute("""
+        SELECT ROUND(SUM(net_expected_annual_value), 2)
         FROM customer_rfm
         WHERE is_at_risk = TRUE
     """).fetchone()[0]
 
-    assert summary_rar == calc_rar, f"Summary Revenue-at-Risk (£{summary_rar}) != Customer RFM sum (£{calc_rar})"
-    assert summary_rar > 0, "Revenue-at-Risk must be greater than zero"
+    calc_gross_rar = db_conn.execute("""
+        SELECT ROUND(SUM(gross_expected_annual_value), 2)
+        FROM customer_rfm
+        WHERE is_at_risk = TRUE
+    """).fetchone()[0]
+
+    assert summary_rar[0] == calc_net_rar, f"Summary Net RAR (£{summary_rar[0]}) != Customer RFM Net RAR sum (£{calc_net_rar})"
+    assert summary_rar[1] == calc_gross_rar, f"Summary Gross RAR (£{summary_rar[1]}) != Customer RFM Gross RAR sum (£{calc_gross_rar})"
+    assert summary_rar[0] > 0, "Net Revenue-at-Risk must be greater than zero"
+
+
+def test_net_revenue_at_risk_not_above_gross(db_conn):
+    """Verify net Revenue-at-Risk is not above gross Revenue-at-Risk enterprise-wide and per segment."""
+    rows = db_conn.execute("""
+        SELECT segment, gross_revenue_at_risk, revenue_at_risk 
+        FROM revenue_at_risk_summary
+    """).fetchall()
+    for seg, gross_rar, net_rar in rows:
+        assert net_rar <= gross_rar, f"Net RAR (£{net_rar}) exceeds gross RAR (£{gross_rar}) for segment {seg}"
+
+
+def test_no_negative_net_expected_annual_value(db_conn):
+    """Verify no customer has a negative net_expected_annual_value (floored at 0)."""
+    neg_count = db_conn.execute("""
+        SELECT COUNT(*) 
+        FROM customer_rfm 
+        WHERE net_expected_annual_value < 0
+    """).fetchone()[0]
+    assert neg_count == 0, f"Found {neg_count} customers with negative net_expected_annual_value"
 
 
 def test_win_back_recovered_revenue_arithmetic(db_conn):
@@ -342,29 +369,47 @@ def test_win_back_recovered_revenue_arithmetic(db_conn):
 
 
 def test_action_list_has_50_rows_sorted_high_to_low(db_conn):
-    """Verify action_list contains exactly 50 rows sorted high to low by expected_annual_value."""
+    """Verify action_list contains exactly 50 rows sorted high to low by net_expected_annual_value."""
     rows = db_conn.execute("""
         SELECT 
             customer_id, country, segment, last_order_date, recency_days,
-            order_count, total_revenue, expected_annual_value, suggested_action
+            order_count, total_revenue, returns_amount, net_revenue, return_pct,
+            returns_flag, gross_expected_annual_value, net_expected_annual_value, suggested_action
         FROM action_list
     """).fetchall()
 
     assert len(rows) == 50, f"action_list must contain exactly 50 rows, found {len(rows)}"
 
-    eav_values = [r[7] for r in rows]
+    net_eav_values = [r[12] for r in rows]
     # Verify strictly descending (monotonically non-increasing)
-    for i in range(len(eav_values) - 1):
-        assert eav_values[i] >= eav_values[i+1], (
-            f"action_list not sorted descending at index {i}: {eav_values[i]} < {eav_values[i+1]}"
+    for i in range(len(net_eav_values) - 1):
+        assert net_eav_values[i] >= net_eav_values[i+1], (
+            f"action_list not sorted descending at index {i}: {net_eav_values[i]} < {net_eav_values[i+1]}"
         )
 
-    # Verify all 50 accounts are at-risk segments
+    # Verify customer 12346 dropped out naturally
+    cust_ids = [r[0] for r in rows]
+    assert 12346 not in cust_ids, "Customer 12346 with net <= 0 spend should not be in the Top 50 Action List"
+
+    # Verify all 50 accounts are at-risk segments with proper suggested actions and flag logic
     for r in rows:
+        cid = r[0]
         seg = r[2]
-        act = r[8]
+        tot_rev = r[6]
+        ret_amt = r[7]
+        net_rev = r[8]
+        ret_pct = r[9]
+        ret_flag = r[10]
+        act = r[13]
+
         assert seg in ("Can't Lose Them", "At Risk"), f"Invalid segment {seg} in action_list"
+        assert abs(net_rev - round(tot_rev - ret_amt, 2)) <= 0.01, f"Net revenue calculation mismatch for {cid}"
+        if tot_rev > 0:
+            expected_flag = (ret_amt > 0.5 * tot_rev)
+            assert ret_flag == expected_flag, f"returns_flag incorrect for {cid}"
+
         if seg == "Can't Lose Them":
             assert act == "personal call + loyalty offer"
         elif seg == "At Risk":
             assert act == "win-back email with a discount"
+
