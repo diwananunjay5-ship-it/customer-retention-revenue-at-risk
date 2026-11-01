@@ -107,7 +107,7 @@ The combined **Net Revenue-at-Risk is £769,096.74 (7.87% of net customer base E
 
 ### Top 50 Prioritized Action Plan
 The exported `action_list.csv` highlights the 50 accounts with highest Net Expected Annual Value:
-1. **High Leverage:** The top 50 accounts account for **£346,808.20** (45.09% of total enterprise Net Revenue-at-Risk). Focus sales outreach here first.
+1. **High Leverage:** The top 50 accounts account for **£289,143.66** (37.60% of total enterprise Net Revenue-at-Risk). Focus sales outreach here first.
 2. **Returns Flag Visibility:** Rather than purging accounts with return activity, accounts are flagged (`returns_flag = TRUE`) if returns exceed 50% of gross spend. Account `15749` is flagged (51.64% returns) so outreach reps can clarify requirements before offering discount terms.
 3. **Natural Resolution of Customer 12346:** Customer `12346` placed invoice `541431` for £77,183.60 on 2011-01-18 and cancelled it on the same day via `C541433`. Under the net revenue formula, their Net EAV floors at £0.00 and they naturally drop out of the top 50 (to rank #708).
 4. **Action Allocations:**
